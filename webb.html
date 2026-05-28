@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>拾光·印记 - 社交分享平台 | 动态发布·头像昵称</title>
+    <style>
+        /* ========== 全局样式 & CSS变量 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #e0e7ff;
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --radius: 1rem;
+            --transition: all 0.2s ease;
+            --toast-bg: #1e293b;
+        }
+
+        body {
+            background: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 80px;
+        }
+
+        /* 容器 */
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* 头部导航 */
+        .app-header {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: rgba(255,255,255,0.92);
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.4rem 0;
+            color: var(--text-muted);
+            transition: var(--transition);
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.25rem;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.4rem;
+            color: var(--text-main);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-page);
+            transform: none;
+        }
+
+        /* 分享卡片 */
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .avatar-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .post-author {
+            font-weight: 600;
+        }
+
+        .post-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .post-content {
+            margin: 0.75rem 0;
+            word-break: break-word;
+        }
+
+        .post-image {
+            max-width: 100%;
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+            max-height: 300px;
+            object-fit: cover;
+            width: auto;
+            border: 1px solid var(--border);
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.8rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .action-btn.liked {
+            color: #ef4444;
+        }
+
+        .action-btn:hover {
+            color: var(--primary);
+        }
+
+        /* 评论区 */
+        .comments-section {
+            margin-top: 1rem;
+            background: var(--bg-page);
+            border-radius: 0.75rem;
+            padding: 0.8rem;
+        }
+
+        .comment-item {
+            font-size: 0.85rem;
+            margin-bottom: 0.6rem;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 0.4rem;
+        }
+
+        .comment-user {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .comment-text {
+            color: var(--text-main);
+        }
+
+        .add-comment {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.6rem;
+        }
+
+        .add-comment input {
+            flex: 1;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .add-comment button {
+            padding: 0.4rem 0.9rem;
+            font-size: 0.8rem;
+        }
+
+        /* 图片上传预览 */
+        .image-preview {
+            margin-top: 0.5rem;
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 0.75rem;
+            display: none;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem;
+            color: var(--text-muted);
+        }
+
+        .badge-private {
+            background: #f1f5f9;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            margin-left: 0.5rem;
+            color: #475569;
+        }
+
+        /* 个人主页编辑区 */
+        .profile-edit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .avatar-large {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-light);
+            cursor: pointer;
+            background: #e2e8f0;
+        }
+        .edit-name-group {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
+        }
+        .edit-name-group input {
+            max-width: 200px;
+        }
+
+        /* Toast 提示 */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: var(--toast-bg);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+        .toast-message.show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        @media (max-width: 560px) {
+            .container {
+                padding: 0 0.8rem;
+            }
+            .nav-links {
+                gap: 0.8rem;
+            }
+            .toast-message {
+                white-space: normal;
+                max-width: 85vw;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-header">
+        <div class="container">
+            <div class="nav-bar">
+                <div class="logo">📖 拾光·印记</div>
+                <div class="nav-links">
+                    <button @click="currentPage='feed'" class="nav-link" :class="{active: currentPage==='feed'}">发现</button>
+                    <button @click="currentPage='publish'" class="nav-link" :class="{active: currentPage==='publish'}">发布</button>
+                    <button @click="currentPage='profile'" class="nav-link" :class="{active: currentPage==='profile'}">我的</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 1.2rem;">
+        <!-- 信息流主页 -->
+        <div v-if="currentPage === 'feed'">
+            <div v-for="post in sortedPosts" :key="post.id" class="card">
+                <div class="post-header">
+                    <img v-if="getUserAvatar(post.author)" :src="getUserAvatar(post.author)" class="avatar-img" alt="avatar">
+                    <div v-else class="avatar-img" style="background: var(--primary-light); display: flex; align-items: center; justify-content: center;">
+                        {{ post.author.slice(0,1).toUpperCase() }}
+                    </div>
+                    <div>
+                        <div class="post-author">{{ post.author }}</div>
+                        <div class="post-time">{{ formatTime(post.createdAt) }}</div>
+                    </div>
+                    <div v-if="post.visibility === 'private'" class="badge-private">仅自己可见</div>
+                </div>
+                <div class="post-content">{{ post.text }}</div>
+                <img v-if="post.imageUrl" :src="post.imageUrl" class="post-image" alt="分享图片" />
+                
+                <div class="post-actions">
+                    <button class="action-btn" :class="{liked: post.isLiked}" @click="toggleLike(post.id)">
+                        ❤️ {{ post.likes || 0 }}
+                    </button>
+                    <button class="action-btn" @click="toggleComments(post.id)">
+                        💬 {{ post.comments.length }} 评论
+                    </button>
+                    <span v-if="post.visibility === 'private' && currentUser !== post.author" style="font-size:0.7rem;color:#94a3b8;">🔒 权限受限</span>
+                </div>
+                
+                <div v-if="activeCommentId === post.id" class="comments-section">
+                    <div v-for="(comment, idx) in post.comments" :key="idx" class="comment-item">
+                        <span class="comment-user">{{ comment.author }}:</span>
+                        <span class="comment-text"> {{ comment.text }}</span>
+                    </div>
+                    <div class="add-comment">
+                        <input type="text" v-model="newCommentText[post.id]" placeholder="写下你的评论..." @keyup.enter="addComment(post.id)">
+                        <button @click="addComment(post.id)">发送</button>
+                    </div>
+                </div>
+            </div>
+            <div v-if="sortedPosts.length === 0" class="empty-state card">✨ 还没有分享，去发布第一条动态吧～</div>
+        </div>
+
+        <!-- 发布页面 -->
+        <div v-if="currentPage === 'publish'" class="card">
+            <h3 style="margin-bottom: 1rem;">✨ 分享此刻心情</h3>
+            <div class="form-group">
+                <label>分享内容</label>
+                <textarea rows="4" v-model="newPost.text" placeholder="说点什么... (最多500字)"></textarea>
+                <div style="font-size:0.7rem;color:gray;margin-top:4px;">{{ newPost.text.length }}/500</div>
+            </div>
+            <div class="form-group">
+                <label>上传图片 (可选)</label>
+                <input type="file" accept="image/*" @change="handleImageUpload" ref="fileInput">
+                <img v-if="newPost.imagePreview" :src="newPost.imagePreview" class="image-preview" style="display:block; max-width:100%; margin-top:8px;" />
+            </div>
+            <div class="form-group">
+                <label>权限控制</label>
+                <select v-model="newPost.visibility">
+                    <option value="public">🌍 公开 (所有人可见)</option>
+                    <option value="private">🔒 仅自己可见</option>
+                </select>
+            </div>
+            <button @click="publishPost" :disabled="!newPost.text.trim()">📤 发布分享</button>
+        </div>
+
+        <!-- 个人主页 (含头像昵称编辑) -->
+        <div v-if="currentPage === 'profile'">
+            <div class="card">
+                <div class="profile-edit">
+                    <!-- 头像显示与上传 -->
+                    <label style="cursor: pointer;">
+                        <img :src="userAvatarUrl || getDefaultAvatarUrl()" class="avatar-large" alt="头像" title="点击更换头像">
+                        <input type="file" accept="image/*" @change="changeAvatar" style="display: none;" ref="avatarInput">
+                    </label>
+                    <div class="edit-name-group">
+                        <input type="text" v-model="editNickname" placeholder="新昵称" maxlength="16">
+                        <button @click="updateNickname">修改昵称</button>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #64748b;">💡 头像和昵称改动会同步到历史帖子中</p>
+                </div>
+                <div style="border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.8rem; text-align:center;">
+                    <span>当前账号 · {{ currentUser }}</span>
+                </div>
+            </div>
+            <h4 style="margin: 1rem 0 0.5rem;">我的发布记录</h4>
+            <div v-for="post in myPosts" :key="post.id" class="card">
+                <div class="post-header">
+                    <img v-if="getUserAvatar(post.author)" :src="getUserAvatar(post.author)" class="avatar-img" alt="avatar">
+                    <div v-else class="avatar-img" style="background:var(--primary-light); display:flex; align-items:center; justify-content:center;">
+                        {{ post.author.slice(0,1).toUpperCase() }}
+                    </div>
+                    <div>
+                        <div class="post-author">{{ post.author }}</div>
+                        <div class="post-time">{{ formatTime(post.createdAt) }}</div>
+                        <span v-if="post.visibility === 'private'" class="badge-private">仅自己可见</span>
+                    </div>
+                </div>
+                <div class="post-content">{{ post.text }}</div>
+                <img v-if="post.imageUrl" :src="post.imageUrl" class="post-image" />
+                <div class="post-actions">
+                    <span>❤️ {{ post.likes || 0 }} 点赞</span>
+                    <span>💬 {{ post.comments.length }} 评论</span>
+                    <button class="action-btn" style="color:#ef4444;" @click="deleteMyPost(post.id)">🗑️ 删除</button>
+                </div>
+            </div>
+            <div v-if="myPosts.length === 0" class="empty-state card">还没有发布过内容，去分享你的第一份记忆吧～</div>
+        </div>
+    </div>
+
+    <!-- 全局toast提示 -->
+    <div class="toast-message" :class="{show: toastVisible}">{{ toastText }}</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+<script>
+    // ========== 模拟后端 & 存储 ==========
+    const STORAGE_POSTS = "share_posts_vue";
+    const STORAGE_USERS = "share_users_profile";  // 存储头像/昵称映射
+    
+    // 默认用户 "林同学"
+    let currentUserName = "林同学";
+    
+    // 用户资料库: { [username]: { avatarBase64, nickname } }
+    let userProfiles = {};
+    
+    function loadUserProfiles() {
+        const stored = localStorage.getItem(STORAGE_USERS);
+        if(stored) {
+            try {
+                userProfiles = JSON.parse(stored);
+            } catch(e) {}
+        }
+        // 确保当前用户有资料
+        if(!userProfiles[currentUserName]) {
+            userProfiles[currentUserName] = { avatarBase64: null, nickname: currentUserName };
+        }
+    }
+    function saveUserProfiles() {
+        localStorage.setItem(STORAGE_USERS, JSON.stringify(userProfiles));
+    }
+    
+    // 帖子数据库
+    let postsDB = [
+        {
+            id: "p1",
+            author: "林同学",
+            text: "今天天气真好！阳光洒在书桌上，代码都变得温柔了 ☀️",
+            imageUrl: null,
+            createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+            likes: 5,
+            comments: [
+                { author: "小夏", text: "同感！今天适合写优雅的代码~" },
+                { author: "阿涛", text: "加油！" }
+            ],
+            visibility: "public",
+            isLiked: false,
+        },
+        {
+            id: "p2",
+            author: "设计喵",
+            text: "分享一个UI小技巧：圆角+柔和阴影yyds",
+            imageUrl: "https://picsum.photos/id/20/400/250",
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            likes: 12,
+            comments: [{ author: "林同学", text: "太好看了！我也学学" }],
+            visibility: "public",
+            isLiked: false,
+        },
+        {
+            id: "p3",
+            author: "林同学",
+            text: "私人笔记：Vue3 组合式API 学习心得，记录一下自己的小进步✨",
+            imageUrl: null,
+            createdAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+            likes: 2,
+            comments: [],
+            visibility: "private",
+            isLiked: false,
+        }
+    ];
+    
+    function loadPosts() {
+        const stored = localStorage.getItem(STORAGE_POSTS);
+        if(stored) {
+            try {
+                let parsed = JSON.parse(stored);
+                parsed = parsed.map(p => ({ ...p, isLiked: p.isLiked || false, comments: p.comments || [] }));
+                postsDB = parsed;
+            } catch(e) {}
+        } else {
+            postsDB = postsDB.map(p => ({ ...p, isLiked: false }));
+        }
+    }
+    function savePosts() {
+        localStorage.setItem(STORAGE_POSTS, JSON.stringify(postsDB));
+    }
+    
+    loadUserProfiles();
+    loadPosts();
+    
+    // 辅助: 获取用户显示昵称 (优先显示自定义昵称)
+    function getUserDisplayName(username) {
+        if(userProfiles[username] && userProfiles[username].nickname) {
+            return userProfiles[username].nickname;
+        }
+        return username;
+    }
+    
+    // 获取用户头像
+    function getUserAvatarUrl(username) {
+        if(userProfiles[username] && userProfiles[username].avatarBase64) {
+            return userProfiles[username].avatarBase64;
+        }
+        return null;
+    }
+    
+    // 同步更新所有帖子里面的旧作者名(修改昵称时需要同步更新帖子author字段为最新昵称，但保留原始逻辑：修改当前用户的昵称时，将posts中所有currentUserName相关帖子的author改为新昵称)
+    function updateAuthorNameAcrossPosts(oldName, newName) {
+        let updated = false;
+        postsDB = postsDB.map(post => {
+            if(post.author === oldName) {
+                updated = true;
+                return { ...post, author: newName };
+            }
+            return post;
+        });
+        // 同时评论里的作者名也要替换
+        postsDB = postsDB.map(post => {
+            const newComments = post.comments.map(com => {
+                if(com.author === oldName) return { ...com, author: newName };
+                return com;
+            });
+            return { ...post, comments: newComments };
+        });
+        if(updated) savePosts();
+    }
+    
+    // Vue实例
+    new Vue({
+        el: '#app',
+        data: {
+            currentPage: 'feed',
+            currentUser: currentUserName,
+            posts: [],
+            newPost: {
+                text: '',
+                imagePreview: null,
+                imageBase64: null,
+                visibility: 'public'
+            },
+            activeCommentId: null,
+            newCommentText: {},
+            // 个人编辑相关
+            editNickname: '',
+            userAvatarPreview: null,
+            toastVisible: false,
+            toastText: '',
+            toastTimer: null
+        },
+        computed: {
+            sortedPosts() {
+                let filtered = this.posts.filter(post => {
+                    if(post.visibility === 'private' && post.author !== this.currentUser) return false;
+                    return true;
+                });
+                return [...filtered].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            },
+            myPosts() {
+                return this.posts.filter(p => p.author === this.currentUser).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            },
+            userAvatarUrl() {
+                return getUserAvatarUrl(this.currentUser);
+            }
+        },
+        watch: {
+            posts: {
+                deep: true,
+                handler() {
+                    savePosts();
+                }
+            }
+        },
+        mounted() {
+            this.loadData();
+            this.editNickname = getUserDisplayName(this.currentUser);
+        },
+        methods: {
+            loadData() {
+                this.posts = postsDB.map(p => ({ ...p }));
+                this.posts.forEach(p => {
+                    if(!this.newCommentText[p.id]) this.$set(this.newCommentText, p.id, '');
+                });
+            },
+            syncDB() {
+                // 手动同步postsDB
+                postsDB = this.posts.map(p => ({ ...p }));
+                savePosts();
+            },
+            showToast(msg, duration = 2000) {
+                if(this.toastTimer) clearTimeout(this.toastTimer);
+                this.toastText = msg;
+                this.toastVisible = true;
+                this.toastTimer = setTimeout(() => {
+                    this.toastVisible = false;
+                }, duration);
+            },
+            formatTime(isoString) {
+                const date = new Date(isoString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                if(diffMins < 1) return "刚刚";
+                if(diffMins < 60) return `${diffMins}分钟前`;
+                if(diffMins < 1440) return `${Math.floor(diffMins/60)}小时前`;
+                return `${Math.floor(diffMins/1440)}天前`;
+            },
+            toggleLike(postId) {
+                const post = this.posts.find(p => p.id === postId);
+                if(post) {
+                    if(post.isLiked) {
+                        post.likes -= 1;
+                        post.isLiked = false;
+                    } else {
+                        post.likes += 1;
+                        post.isLiked = true;
+                    }
+                    this.syncDB();
+                }
+            },
+            toggleComments(postId) {
+                this.activeCommentId = this.activeCommentId === postId ? null : postId;
+            },
+            addComment(postId) {
+                const post = this.posts.find(p => p.id === postId);
+                if(!post) return;
+                if(post.visibility === 'private' && post.author !== this.currentUser) {
+                    this.showToast("作者设置了私密权限，无法评论", 1500);
+                    return;
+                }
+                const text = (this.newCommentText[postId] || '').trim();
+                if(!text) return;
+                const newComment = {
+                    author: this.currentUser,
+                    text: text,
+                };
+                post.comments.push(newComment);
+                this.$set(this.newCommentText, postId, '');
+                this.syncDB();
+                this.activeCommentId = postId;
+                this.showToast("评论成功", 1000);
+            },
+            handleImageUpload(e) {
+                const file = e.target.files[0];
+                if(!file) return;
+                if(!file.type.startsWith('image/')) {
+                    this.showToast("请选择图片文件", 1200);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    this.newPost.imagePreview = ev.target.result;
+                    this.newPost.imageBase64 = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            },
+            publishPost() {
+                let textContent = this.newPost.text.trim();
+                if(!textContent) {
+                    this.showToast("请填写分享内容", 1200);
+                    return;
+                }
+                if(textContent.length > 500) {
+                    this.showToast("内容不能超过500字", 1200);
+                    return;
+                }
+                const newId = 'post_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+                const newPostItem = {
+                    id: newId,
+                    author: this.currentUser,
+                    text: textContent,
+                    imageUrl: this.newPost.imageBase64 || null,
+                    createdAt: new Date().toISOString(),
+                    likes: 0,
+                    comments: [],
+                    visibility: this.newPost.visibility,
+                    isLiked: false,
+                };
+                this.posts.unshift(newPostItem);
+                this.syncDB();
+                // 重置发布表单
+                this.newPost.text = '';
+                this.newPost.imagePreview = null;
+                this.newPost.imageBase64 = null;
+                this.newPost.visibility = 'public';
+                if(this.$refs.fileInput) this.$refs.fileInput.value = '';
+                // 发布成功提示
+                this.showToast("✨ 发布成功！动态已分享", 1800);
+                this.currentPage = 'feed';
+            },
+            deleteMyPost(postId) {
+                if(confirm("确定删除这条分享吗？")) {
+                    this.posts = this.posts.filter(p => p.id !== postId);
+                    this.syncDB();
+                    if(this.activeCommentId === postId) this.activeCommentId = null;
+                    this.showToast("已删除分享", 1000);
+                }
+            },
+            // 更换头像
+            changeAvatar(e) {
+                const file = e.target.files[0];
+                if(!file) return;
+                if(!file.type.startsWith('image/')) {
+                    this.showToast("请选择图片", 1000);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const base64 = ev.target.result;
+                    if(!userProfiles[this.currentUser]) userProfiles[this.currentUser] = { avatarBase64: null, nickname: this.currentUser };
+                    userProfiles[this.currentUser].avatarBase64 = base64;
+                    saveUserProfiles();
+                    this.showToast("头像更新成功", 1200);
+                    this.$forceUpdate();  // 刷新头像显示
+                };
+                reader.readAsDataURL(file);
+            },
+            // 更新昵称
+            updateNickname() {
+                let newName = this.editNickname.trim();
+                if(!newName) {
+                    this.showToast("昵称不能为空", 1000);
+                    return;
+                }
+                if(newName === this.currentUser) {
+                    this.showToast("新昵称与当前一致", 1000);
+                    return;
+                }
+                // 检查是否与其他用户冲突? 简单演示不复杂检查但为了保证不混淆，仅更新当前用户资料
+                const oldName = this.currentUser;
+                // 更新 profiles 映射
+                if(!userProfiles[oldName]) userProfiles[oldName] = { avatarBase64: null, nickname: oldName };
+                // 将资料转移到新用户名下 (保留头像)
+                const oldProfile = userProfiles[oldName];
+                // 删除旧索引
+                delete userProfiles[oldName];
+                // 创建新用户资料
+                userProfiles[newName] = {
+                    avatarBase64: oldProfile.avatarBase64 || null,
+                    nickname: newName
+                };
+                // 更新所有帖子作者名以及评论作者名
+                updateAuthorNameAcrossPosts(oldName, newName);
+                // 更改当前登录用户名
+                this.currentUser = newName;
+                currentUserName = newName;
+                // 重新加载帖子
+                this.loadData();
+                saveUserProfiles();
+                this.editNickname = newName;
+                this.showToast(`昵称已更改为 ${newName}`, 1500);
+                // 强制刷新视图
+                this.$forceUpdate();
+            },
+            getUserAvatar(username) {
+                return getUserAvatarUrl(username);
+            },
+            getDefaultAvatarUrl() {
+                return "https://ui-avatars.com/api/?background=6366f1&color=fff&rounded=true&size=90&bold=true&font-size=0.33&name=" + encodeURIComponent(this.currentUser.slice(0,2));
+            }
+        }
+    });
+</script>
+</body>
+</html>
